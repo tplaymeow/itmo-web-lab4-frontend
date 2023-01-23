@@ -3,8 +3,11 @@ import {Link, useNavigate} from "react-router-dom";
 
 import {useLoginMutation} from "./authApiSlice";
 import {setTokens} from "./authSlice";
-import Header from "../../components/Header";
+import Header from "../../components/header/Header";
 import {useForm} from "react-hook-form";
+import "../../css/theme.css";
+import "./auth.css";
+import "./auth-responsive.css";
 
 const LoginPage = () => {
     const dispatch = useDispatch()
@@ -15,12 +18,12 @@ const LoginPage = () => {
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: {errors},
     } = useForm();
 
     const onSubmit = async (data) => {
-        const { access: accessToken, refresh: refreshToken } = await login(data).unwrap()
-        dispatch(setTokens({ accessToken, refreshToken }))
+        const {access: accessToken, refresh: refreshToken} = await login(data).unwrap()
+        dispatch(setTokens({accessToken, refreshToken}))
         navigate('/')
         console.log(accessToken)
         console.log(refreshToken)
@@ -28,10 +31,11 @@ const LoginPage = () => {
 
     return (
         <>
-            <Header pageName="Login" />
+            <Header pageName="Login"/>
 
             <form onSubmit={handleSubmit(onSubmit)}>
-                    <div>
+                <div className="input-fields">
+                    <div className="input-field">
                         <label htmlFor="username">Username</label>
                         <input
                             type="text"
@@ -48,7 +52,7 @@ const LoginPage = () => {
                         {errors.username && <p>{errors.username.message}</p>}
                     </div>
 
-                    <div>
+                    <div className="input-field">
                         <label htmlFor="password">Password</label>
                         <input
                             type="password"
@@ -65,13 +69,17 @@ const LoginPage = () => {
                         {errors.password && <p>{errors.password.message}</p>}
                     </div>
 
-                <button>Sign In</button>
+                    <div className="input-field">
+                        <button>Sign In</button>
+                    </div>
 
-                <Link to="/registration">Sign Up</Link>
+                    <div className="input-field">
+                        <Link to="/registration">Sign Up</Link>
+                    </div>
+                </div>
             </form>
         </>
     )
-
 }
 
 export default LoginPage

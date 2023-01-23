@@ -1,0 +1,51 @@
+@media only screen and (max-width: 1156px) {
+    .content {
+        margin: 0;
+    }
+
+    .logout-button-container {
+        text-align: left;
+    }
+
+    .chart-container,
+    .form-container {
+        display: block;
+    }
+
+    .form-container .form-inputs .x-coord,
+    .form-container .form-inputs .y-coord,
+    .form-container .form-inputs .r-coord {
+        display: block;
+    }
+
+    .form-container .form-inputs .x-coord > div,
+    .form-container .form-inputs .r-coord > div {
+        display: inline-block;
+    }
+
+    .results-table-container table {
+        margin: 0;
+    }
+
+    .form-container .form-inputs .y-coord label {
+        display: inline-block;
+        margin-right: 5px;
+    }
+}
+
+@media only screen and (max-width: 782px) {
+    .form-container .form-inputs .x-coord,
+    .form-container .form-inputs .y-coord,
+    .form-container .form-inputs .r-coord {
+        display: inline-block;
+    }
+
+    .form-container .form-inputs .x-coord > div,
+    .form-container .form-inputs .r-coord > div {
+        display: block;
+    }
+
+    .form-container .form-inputs .y-coord label {
+        display: block;
+    }
+}

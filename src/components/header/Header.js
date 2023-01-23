@@ -1,3 +1,5 @@
+import "./header.css";
+import "./header-responsive.css";
 
 const Header = ({
     pageName,

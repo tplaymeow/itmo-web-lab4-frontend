@@ -1,0 +1,11 @@
+.input-fields {
+    text-align: center;
+}
+
+.input-fields  .input-field {
+    margin: 10px;
+}
+
+.input-fields .input-field label {
+    margin-right: 5px;
+}

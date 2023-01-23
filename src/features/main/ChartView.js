@@ -1,120 +1,21 @@
-export class ChartView {
-    constructor(element, minX, maxX, minY, maxY) {
-        this._element = element;
-        this._minX = minX;
-        this._maxX = maxX;
-        this._minY = minY;
-        this._maxY = maxY;
-    }
+import {useEffect, useRef} from "react";
 
-    render(data) {
-        const ctx = this._element.getContext('2d');
-        ctx.clearRect(0, 0, this._element.width, this._element.height);
-        this._drawBoard(ctx);
-        this._drawShape(ctx, data.radius);
-        this._drawItems(ctx, data.items);
-    }
-
-    set onClickChart(handler) {
-        const onClick = (event) => {
-            this._element.removeEventListener('click', onClick);
-
-            const position = this._getCursorPosition(event);
-            const coordinate = this._positionToCoordinate(position);
-            handler(coordinate);
-        }
-
-        this._element.addEventListener('click', onClick);
-    }
-
-    // Drawing
-
-    _drawBoard(context) {
-        context.beginPath();
-        context.lineWidth = 0.5;
-        for (let x = this._scaleFactorX; x < this._width; x += this._scaleFactorX) {
-            context.moveTo(x, 0);
-            context.lineTo(x, this._height);
-        }
-        for (let y = this._scaleFactorY; y < this._height; y += this._scaleFactorY) {
-            context.moveTo(0, y);
-            context.lineTo(this._width, y);
-        }
-        context.stroke();
-    }
-
-    _drawShape(context, radius) {
-        context.beginPath();
-        context.fillStyle = '#809bce';
-        context.lineWidth = 1.0;
-        context.beginPath();
-
-        var nextPos = this._coordinateToPosition({ x: 0, y: 0 });
-        context.moveTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: 0, y: -radius/2.0 });
-        context.lineTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: radius/2.0, y: 0 });
-        context.lineTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: radius, y: 0 });
-        context.lineTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: radius, y: radius });
-        context.lineTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: 0, y: radius });
-        context.lineTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: 0, y: radius/2.0 });
-        context.lineTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: 0, y: 0 });
-        context.moveTo(nextPos.x, nextPos.y);
-
-        nextPos = this._coordinateToPosition({ x: 0, y: 0 });
-        context.arc(nextPos.x, nextPos.y, this._scaleFactorX * radius / 2, Math.PI, Math.PI * 1.5);
-
-        context.fill();
-        context.stroke();
-    }
-
-    _drawItems(context, items) {
-        context.beginPath();
-        items.forEach(item => {
-            const position = this._coordinateToPosition(item);
-            const radius = 5;
-            context.fillStyle = item.color;
-            context.beginPath();
-            context.arc(position.x, position.y, radius, 0, 2 * Math.PI);
-            context.fill();
-            context.closePath();
-        });
-    }
+const ChartView = (
+    {width, height, minX, maxX, minY, maxY, radius, items, onClickChart}
+) => {
+    const canvasRef = useRef(null)
 
     // Dimensions
 
-    get _width() {
-        return this._element.getBoundingClientRect().width;
-    }
-
-    get _height() {
-        return this._element.getBoundingClientRect().height;
-    }
-
-    get _scaleFactorX() {
-        return this._width / (this._maxX - this._minX);
-    }
-
-    get _scaleFactorY() {
-        return this._height / (this._maxY - this._minY);
-    }
+    const getWidth = () => { return width }
+    const getHeight = () => { return height }
+    const getScaleFactorX = () => { return getWidth() / (maxX - minX) }
+    const getScaleFactorY = () => { return getHeight() / (maxY - minY)}
 
     // Position Extracting
 
-    _getCursorPosition(event) {
-        const rect = this._element.getBoundingClientRect();
+    const getCursorPosition = (event) => {
+        const rect = canvasRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         return { x: x, y: y };
@@ -122,19 +23,114 @@ export class ChartView {
 
     // Coordinate - Position Converting
 
-    _positionToCoordinate(position) {
-        const offsetX = position.x / this._scaleFactorX;
-        const offsetY = position.y / this._scaleFactorY;
-        const x = this._minX + offsetX;
-        const y = this._maxY - offsetY;
+    const positionToCoordinate = (position) => {
+        const offsetX = position.x / getScaleFactorX();
+        const offsetY = position.y / getScaleFactorY();
+        const x = minX + offsetX;
+        const y = maxY - offsetY;
         return { x: x, y: y };
     }
 
-    _coordinateToPosition(coordinate) {
-        const offsetX = coordinate.x - this._minX;
-        const offsetY = this._maxY - coordinate.y;
-        const x = offsetX * this._scaleFactorX;
-        const y = offsetY * this._scaleFactorY;
+    const coordinateToPosition = (coordinate) => {
+        const offsetX = coordinate.x - minX;
+        const offsetY = maxY - coordinate.y;
+        const x = offsetX * getScaleFactorX();
+        const y = offsetY * getScaleFactorY();
         return { x: x, y: y };
     }
+
+    // Drawing
+
+    const clearCanvas = (context) => {
+        context.clearRect(0, 0, getWidth(), getWidth())
+    }
+
+    const drawBoard = (context) => {
+        context.beginPath();
+        context.lineWidth = 0.5;
+        for (let x = getScaleFactorX(); x < getWidth(); x += getScaleFactorX()) {
+            context.moveTo(x, 0);
+            context.lineTo(x, getHeight());
+        }
+        for (let y = getScaleFactorY(); y < getHeight(); y += getScaleFactorY()) {
+            context.moveTo(0, y);
+            context.lineTo(getWidth(), y);
+        }
+        context.stroke();
+    }
+
+    const drawShape = (context, radius) => {
+        context.beginPath()
+        context.fillStyle = '#809bce'
+        context.lineWidth = 1.0
+        context.beginPath()
+
+        let nextPos = coordinateToPosition({x: 0, y: 0})
+        context.moveTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: 0, y: -radius/2.0 })
+        context.lineTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: radius/2.0, y: 0 })
+        context.lineTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: radius, y: 0 })
+        context.lineTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: radius, y: radius })
+        context.lineTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: 0, y: radius })
+        context.lineTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: 0, y: radius/2.0 })
+        context.lineTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: 0, y: 0 })
+        context.moveTo(nextPos.x, nextPos.y)
+
+        nextPos = coordinateToPosition({ x: 0, y: 0 })
+        context.arc(nextPos.x, nextPos.y, getScaleFactorX() * radius / 2, Math.PI, Math.PI * 1.5)
+
+        context.fill()
+        context.stroke()
+    }
+
+    const drawItems = (context, items) => {
+        context.beginPath()
+        items.forEach(item => {
+            const position = coordinateToPosition(item)
+            const radius = 5
+            context.fillStyle = item.color
+            context.beginPath()
+            context.arc(position.x, position.y, radius, 0, 2 * Math.PI)
+            context.fill()
+            context.closePath()
+        })
+    }
+
+    useEffect(() => {
+        const canvas = canvasRef.current
+        const context = canvas.getContext('2d')
+
+        clearCanvas(context)
+        drawBoard(context)
+        drawShape(context, radius)
+        drawItems(context, items)
+    }, [width, height, minX, maxX, minY, maxY, radius, items])
+
+    const handleOnClick = (event) => {
+        const position = getCursorPosition(event)
+        const coordinate = positionToCoordinate(position)
+        onClickChart(coordinate)
+    }
+
+    return <canvas
+        width={width}
+        height={height}
+        ref={canvasRef}
+        onClick={handleOnClick}
+    />
 }
+
+export default ChartView
